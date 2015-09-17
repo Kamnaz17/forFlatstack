@@ -1,0 +1,139 @@
+import java.util.HashMap;
+import java.util.Scanner;
+
+public class Calculator {
+	private HashMap<String, Double> v;
+
+	public Calculator() {
+		v = new HashMap<String, Double>();
+	}
+
+	public void setVariable(String vName, Double vValue) {
+		v.put(vName, vValue);
+	}
+
+	public Double getVariable(String vName) {
+		if (!v.containsKey(vName)) {
+			System.err.println("Ошибка ввода");
+			return 0.0;
+		}
+		return v.get(vName);
+	}
+
+	public double Parse(String s) throws Exception {
+		Result result = PlusMinus(s);
+		if (!result.rest.isEmpty()) {
+			System.err.println("Ошибка!" );
+		} else {
+			return result.acc;
+		}
+		return 0;
+	}
+
+	private Result PlusMinus(String s) throws Exception {
+		Result current = MulDiv(s);
+		double acc = current.acc;
+
+		while (current.rest.length() > 0) {
+			if (!(current.rest.charAt(0) == '+' || current.rest.charAt(0) == '-'))
+				break;
+
+			char sign = current.rest.charAt(0);
+			String next = current.rest.substring(1);
+
+			current = MulDiv(next);
+			if (sign == '+') {
+				acc += current.acc;
+			} else {
+				acc -= current.acc;
+			}
+		}
+		return new Result(acc, current.rest);
+	}
+
+	private Result Erunda(String s) throws Exception {
+		char zeroChar = s.charAt(0);
+		if (zeroChar == '(') {
+			Result r = PlusMinus(s.substring(1));
+			if (!r.rest.isEmpty() && r.rest.charAt(0) == ')') {
+				r.rest = r.rest.substring(1);
+			} else {
+				System.err.println("Не закрыта скобка");
+			}
+			return r;
+		}
+		return Num(s);
+	}
+
+	private Result MulDiv(String s) throws Exception {
+		Result current = Num(s);
+
+		double acc = current.acc;
+		while (true) {
+			if (current.rest.length() == 0) {
+				return current;
+			}
+			char sign = current.rest.charAt(0);
+			if ((sign != '*' && sign != '/'))
+				return current;
+
+			String next = current.rest.substring(1);
+			Result right = Erunda(next);
+
+			if (sign == '*') {
+				acc *= right.acc;
+			} else {
+				acc /= right.acc;
+			}
+
+			current = new Result(acc, right.rest);
+		}
+	}
+
+	private Result Num(String s) throws Exception {
+		int i = 0;
+		int dot_cnt = 0;
+		boolean negative = false;
+		
+		if (s.charAt(0) == '-') {
+			negative = true;
+			s = s.substring(1);
+		}
+		
+		while (i < s.length()
+				&& (Character.isDigit(s.charAt(i)) || s.charAt(i) == '.')) {
+			
+			if (s.charAt(i) == '.' && ++dot_cnt > 1) {
+				throw new Exception("неправильный ввод");
+			}
+			i++;
+		}
+		if (i == 0) { 
+			throw new Exception("неправильный ввод ");
+		}
+
+		double dPart = Double.parseDouble(s.substring(0, i));
+		if (negative)
+			dPart = -dPart;
+		String restPart = s.substring(i);
+
+		return new Result(dPart, restPart);
+	}
+
+	public static void main(String[] args) {
+
+		Scanner sc = new Scanner(System.in);
+		System.out.println("Введите арифметическое выражение без скобок. Вещественные числа записываются через точку. ");
+		String line = sc.next();
+		line = line.replaceAll(" ", "");
+		Calculator p = new Calculator();
+		p.setVariable("X", 2.0);
+
+		try {
+			System.out.println(line + "=" + p.Parse(line));
+		} catch (Exception e) {
+			System.err.println("Ошибка");
+
+		}
+	}
+}
