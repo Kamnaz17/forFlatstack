@@ -1,0 +1,27 @@
+public class fizzbuzz {
+
+	public static void main(String[] args) {
+		String s = "";
+		int k = 0, j = 0, n;
+
+		for (int i = 1; i <= 100; i++) {
+			if ((i-1 == k) || (i + 1 == k + 3) ) {
+				s += " ";
+			}
+
+			if ((i == k + 3) || (i == j + 5)) {
+				if (i == k + 3) {
+					s += " fizz";
+					k += 3;
+				}
+				if (i == j + 5) {
+					s += "buzz";
+					j += 5;
+				}
+			} else {
+				s += i;
+			}
+		}
+		System.out.println(s);
+	}
+}
